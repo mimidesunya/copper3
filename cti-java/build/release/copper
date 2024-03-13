@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java -jar ./cti-driver-2.2.2.jar $*
