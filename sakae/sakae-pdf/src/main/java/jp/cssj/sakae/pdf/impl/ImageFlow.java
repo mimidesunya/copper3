@@ -1,6 +1,7 @@
 package jp.cssj.sakae.pdf.impl;
 
 import java.awt.Graphics2D;
+import java.awt.geom.AffineTransform;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.IndexColorModel;
@@ -26,11 +27,18 @@ import javax.imageio.stream.FileCacheImageOutputStream;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader;
 
 import jp.cssj.resolver.Source;
 import jp.cssj.sakae.g2d.util.G2dUtils;
 import jp.cssj.sakae.gc.image.Image;
+import jp.cssj.sakae.gc.image.util.TransformedImage;
 import jp.cssj.sakae.pdf.ObjectRef;
 import jp.cssj.sakae.pdf.PdfFragmentOutput;
 import jp.cssj.sakae.pdf.gc.PdfImage;
@@ -89,9 +97,11 @@ class ImageFlow {
 			};
 		} else {
 			in = new FileCacheImageInputStream(source.getInputStream(), null) {
+
 				public void flushBefore(long pos) throws IOException {
 					// 再読み込み不可能になることを防止するため、flushを無視する
 				}
+
 			};
 		}
 		try {
@@ -109,6 +119,7 @@ class ImageFlow {
 
 	private Image addImage(ImageInputStream imageIn, BufferedImage image) throws IOException {
 		PdfImage pdfImage;
+		int orientation = 1;
 		ImageReader ir;
 		if (imageIn != null) {
 			JPEGImageReader cir = null;
@@ -122,7 +133,7 @@ class ImageFlow {
 						if (iti != null && iti.hasNext()) {
 							imageIn.seek(0);
 							if (ir instanceof JPEGImageReader) {
-								cir = (JPEGImageReader)ir;
+								cir = (JPEGImageReader) ir;
 								continue;
 							}
 							break;
@@ -147,10 +158,9 @@ class ImageFlow {
 		} else {
 			ir = null;
 		}
+		int width;
+		int height;
 		try {
-			int width;
-			int height;
-
 			short colorMode = this.params.getColorMode();
 			short streamCompression = this.params.getCompression();
 			short imageCompression = this.params.getImageCompression();
@@ -185,7 +195,11 @@ class ImageFlow {
 			boolean iccGray = false;
 			int maxWidth = this.params.getMaxImageWidth();
 			int maxHeight = this.params.getMaxImageHeight();
-
+			if (orientation == 5 || orientation == 6 || orientation == 7 || orientation == 8) {
+	            int temp = maxWidth;
+	            maxWidth = maxHeight;
+	            maxHeight = temp;
+	        }
 			if (image == null) {
 				try {
 					width = ir.getWidth(0);
@@ -218,10 +232,25 @@ class ImageFlow {
 						imageIn.skipBytes(length - 2);
 					}
 				}
+				
+				imageIn.seek(0);
+				try {
+					Metadata metadata = ImageMetadataReader.readMetadata(new ImageInputStreamProxy(imageIn));
+					Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+					if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+						// EXIFありかつ、画像方向ありの場合は取得する
+						orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+					}
+				} catch (ImageProcessingException e) {
+					// ignore
+				} catch (MetadataException e) {
+					// ignore
+				}
 			} else {
 				width = image.getWidth();
 				height = image.getHeight();
 			}
+			
 			boolean resize = (maxWidth > 0 && width > maxWidth) || (maxHeight > 0 && height > maxHeight);
 			double orgWidth = width;
 			double orgHeight = height;
@@ -231,6 +260,7 @@ class ImageFlow {
 					imageIn.seek(0);
 					image = G2dUtils.loadImage(ir, imageIn);
 				}
+
 				if (resize) {
 					// 縮小
 					int type = image.getType();
@@ -278,7 +308,6 @@ class ImageFlow {
 					} finally {
 						scaled.flush();
 					}
-					imageType = PdfParams.IMAGE_COMPRESSION_FLATE;
 				}
 
 				// グレースケールフィルタ
@@ -297,6 +326,7 @@ class ImageFlow {
 						}
 					}
 				}
+				imageType = PdfParams.IMAGE_COMPRESSION_FLATE;
 			}
 			try {
 				String name = "I" + this.imageNumber;
@@ -734,6 +764,45 @@ class ImageFlow {
 			}
 		}
 		++this.imageNumber;
-		return pdfImage;
+		
+		if (orientation == 1) {
+			return pdfImage;
+		}
+		final AffineTransform at = new AffineTransform();
+		switch (orientation) {
+		    case 2: // 左右反転
+		        at.scale(-1, 1);
+		        at.translate(-width, 0);
+		        break;
+		    case 3: // 180度回転
+		        at.rotate(Math.PI, width / 2.0, height / 2.0);
+		        break;
+		    case 4: // 上下反転
+		        at.scale(1, -1);
+		        at.translate(0, -height);
+		        break;
+		    case 5: // 左右反転して時計回り90度
+		        at.rotate(Math.PI / 2);
+		        at.scale(-1, 1);
+		        at.translate(0, -height);
+		        break;
+		    case 6: // 時計回り90度
+		        at.rotate(Math.PI / 2);
+		        at.translate(0, -height);
+		        break;
+		    case 7: // 左右反転して時計回り270度
+		        at.rotate(-Math.PI / 2);
+		        at.scale(-1, 1);
+		        at.translate(-width, 0);
+		        break;
+		    case 8: // 時計回り270度
+		        at.rotate(-Math.PI / 2);
+		        at.translate(-width, 0);
+		        break;
+		    default: // 通常
+		    	return pdfImage;
+		}
+		Image retImage = new TransformedImage(pdfImage, at);
+		return retImage;
 	}
 }

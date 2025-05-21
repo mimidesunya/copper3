@@ -176,21 +176,22 @@ public abstract class OpenTypeFont implements ShapedFont {
 	public short getKerning(int sgid, int gid) {
 		int scid = this.toChar(sgid);
 		// カッコ類のカーニング
-		if (CL01.contains((char) scid) && this.getWidth(sgid) > 500) {
+		final short THRESHOLD = 750, KERNING = 500;
+		if (CL01.contains((char) scid) && this.getWidth(sgid) > THRESHOLD) {
 			int cid = this.toChar(gid);
-			if (CL01.contains((char) cid) && this.getWidth(gid) > 500) {
-				return 500;
+			if (CL01.contains((char) cid) && this.getWidth(gid) > THRESHOLD) {
+				return KERNING;
 			}
-		} else if (CL02.contains((char) scid) && this.getWidth(sgid) > 500) {
+		} else if (CL02.contains((char) scid) && this.getWidth(sgid) > THRESHOLD) {
 			int cid = this.toChar(gid);
 			if ((CL01.contains((char) cid) || CL02.contains((char) cid) || CL0607.contains((char) cid))
-					&& this.getWidth(gid) > 500) {
-				return 500;
+					&& this.getWidth(gid) > THRESHOLD) {
+				return KERNING;
 			}
-		} else if (CL0607.contains((char) scid) && this.getWidth(sgid) > 500) {
+		} else if (CL0607.contains((char) scid) && this.getWidth(sgid) > THRESHOLD) {
 			int cid = this.toChar(gid);
-			if ((CL01.contains((char) cid) || (CL02.contains((char) cid)) && this.getWidth(gid) > 500)) {
-				return 500;
+			if ((CL01.contains((char) cid) || (CL02.contains((char) cid)) && this.getWidth(gid) > THRESHOLD)) {
+				return KERNING;
 			}
 		}
 		return 0;

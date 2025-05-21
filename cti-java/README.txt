@@ -4,29 +4,26 @@ CTI Java版
 Javaを使ってCopper PDFにアクセスするためのプログラムです。
 Copper PDF 2.1.0以降が必要です。
 使用方法は付属のAPIドキュメント、サンプルプログラム、以下のオンラインマニュアルを参照してください。
-http://dl.cssj.jp/docs/copper/3.0/contents/3420_ctip2_java.html
+http://dl.cssj.jp/docs/copper/3.2/html/3420_ctip2_java.html
 
-ソースコードはSourceForge.JPに公開しています。
-以下のガイドを参考にSVNから取得してください。
-http://sourceforge.jp/projects/copper/cvs/
-CTI Javaのソースコードのターゲットパスは以下の通りです。
-http://svn.sourceforge.jp/svnroot/copper/drivers/java/trunk/
+ソースコードはGitHubで公開しています。
+https://github.com/mimidesunya/copper3/tree/main/cti-java
 
 ■ 付属物
 
-cti-driver-@version@.jar	-- ドライバ本体（CTIP, REST, CLIが利用可能）
+cti-driver-@version@.jar		-- ドライバ本体（CTIP, REST, CLIが利用可能）
 cti-driver-min-@version@.jar	-- 最小構成のドライバ（REST, CLIは利用不可）
-apidoc   				-- APIドキュメント(Javadoc)
-lib      				-- サンプルのコンパイルに必要なライブラリ
-examples 				-- サンプルプログラム
+apidoc			-- APIドキュメント(Javadoc)
+lib      			-- サンプルのコンパイルに必要なライブラリ
+examples 			-- サンプルプログラム
 compile-examples.sh		-- サンプルプログラムをコンパイルするスクリプト(Linux)
-compile-examples.bat	-- サンプルプログラムをコンパイルするスクリプト(Windows)
-copper                  -- コマンドラインcopperプログラム(Linux)
-copper.bat              -- コマンドラインcopperプログラム(Windows)
+compile-examples.bat		-- サンプルプログラムをコンパイルするスクリプト(Windows)
+copper             		-- コマンドラインcopperプログラム(Linux)
+copper.bat              		-- コマンドラインcopperプログラム(Windows)
 
 ■　コマンドラインプログラムについて
 copper, copper.batについては、以下のドキュメントを参照して下さい。
-http://dl.cssj.jp/docs/copper/3.0/html/2100_tools.html#admin-copper
+http://dl.cssj.jp/docs/copper/3.2/html/2100_tools.html#admin-copper
 
 ■ サンプルプログラムについて
 javacコマンドが実行できるようにパスを設定しておいて下さい。
@@ -67,7 +64,7 @@ Apache License Version 2.0に基づいてライセンスされます。
 いかなる保証も条件もなしに「現状のまま」頒布されます。
 本ライセンスでの権利と制限を規定した文言については、本ライセンスを参照してください。 
 
-Copyright (c) 2012-2014 Zamasoft.
+Copyright (c) 2012-2024 Zamasoft.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -82,6 +79,9 @@ See the License for the specific language governing permissions and
 limitations under the License.
 
 ■ 変更履歴
+-- v2.2.3 2024-03-27
+サーブレットでContent-Typeを出力する際に、空の charset= パラメータが追加されてしまうバグに対応しました。
+
 -- v2.2.2 2024-03-14
 javax.servlet 4 に対応しました。
 jakarta.servlet 5 に対応しました。

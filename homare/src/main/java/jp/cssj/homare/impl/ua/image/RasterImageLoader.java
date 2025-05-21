@@ -1,5 +1,6 @@
 package jp.cssj.homare.impl.ua.image;
 
+import java.awt.geom.AffineTransform;
 import java.io.IOException;
 import java.util.Iterator;
 
@@ -10,6 +11,12 @@ import javax.imageio.stream.FileCacheImageInputStream;
 import javax.imageio.stream.FileImageInputStream;
 import javax.imageio.stream.ImageInputStream;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.MetadataException;
+import com.drew.metadata.exif.ExifIFD0Directory;
 import com.twelvemonkeys.imageio.plugins.jpeg.JPEGImageReader;
 
 import jp.cssj.homare.ua.ImageLoader;
@@ -18,6 +25,8 @@ import jp.cssj.resolver.Source;
 import jp.cssj.sakae.g2d.image.RasterImageImpl;
 import jp.cssj.sakae.g2d.util.G2dUtils;
 import jp.cssj.sakae.gc.image.Image;
+import jp.cssj.sakae.gc.image.util.TransformedImage;
+import jp.cssj.sakae.pdf.impl.ImageInputStreamProxy;
 
 public class RasterImageLoader implements ImageLoader {
 	public boolean match(Source key) {
@@ -97,7 +106,62 @@ public class RasterImageLoader implements ImageLoader {
 				}
 			}
 			imageIn.seek(0);
-			return new RasterImageImpl(G2dUtils.loadImage(ir, imageIn));
+			
+			int orientation = 1;
+			try {
+				Metadata metadata = ImageMetadataReader.readMetadata(new ImageInputStreamProxy(imageIn));
+				Directory directory = metadata.getFirstDirectoryOfType(ExifIFD0Directory.class);
+				if (directory != null && directory.containsTag(ExifIFD0Directory.TAG_ORIENTATION)) {
+					// EXIFありかつ、画像方向ありの場合は取得する
+					orientation = directory.getInt(ExifIFD0Directory.TAG_ORIENTATION);
+				}
+			} catch (ImageProcessingException e) {
+				// ignore
+			} catch (MetadataException e) {
+				// ignore
+			}
+
+			final Image image = new RasterImageImpl(G2dUtils.loadImage(ir, imageIn));
+			if (orientation == 1) {
+				return image;
+			}
+			final AffineTransform at = new AffineTransform();
+			final double width = image.getWidth();
+			final double height = image.getHeight();
+			switch (orientation) {
+			    case 2: // 左右反転
+			        at.scale(-1, 1);
+			        at.translate(-width, 0);
+			        break;
+			    case 3: // 180度回転
+			        at.rotate(Math.PI, width / 2.0, height / 2.0);
+			        break;
+			    case 4: // 上下反転
+			        at.scale(1, -1);
+			        at.translate(0, -height);
+			        break;
+			    case 5: // 左右反転して時計回り90度
+			        at.rotate(Math.PI / 2);
+			        at.scale(-1, 1);
+			        at.translate(0, -height);
+			        break;
+			    case 6: // 時計回り90度
+			        at.rotate(Math.PI / 2);
+			        at.translate(0, -height);
+			        break;
+			    case 7: // 左右反転して時計回り270度
+			        at.rotate(-Math.PI / 2);
+			        at.scale(-1, 1);
+			        at.translate(-width, 0);
+			        break;
+			    case 8: // 時計回り270度
+			        at.rotate(-Math.PI / 2);
+			        at.translate(-width, 0);
+			        break;
+			    default: // 通常
+			    	return image;
+			}
+			return new TransformedImage(image, at);
 		} finally {
 			imageIn.close();
 		}

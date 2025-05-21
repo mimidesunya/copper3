@@ -9,7 +9,7 @@
 	<groupId>net.zamasoft</groupId>
 	<artifactId>cti-java</artifactId>
 	<packaging>pom</packaging>
-	<version>2.2.2</version>
+	<version>2.2.3</version>
 	<name>CTI Java Implemntation</name>
 	<description>
 Copper PDFドライバのJava実装です

@@ -138,7 +138,13 @@ public class V2ContentProducer {
 				throw new IOException(e.getMessage());
 			}
 			this.mimeType = this.io.readString(this.destShort, this.charset);
+			if (this.mimeType.length() == 0) {
+				this.mimeType = null;
+			}
 			this.encoding = this.io.readString(this.destShort, this.charset);
+			if (this.encoding.length() == 0) {
+				this.encoding = null;
+			}
 			this.length = this.io.readLong(this.destLong);
 			break;
 

@@ -2,8 +2,8 @@
 
 <project default="release">
 	<property name="name" value="cti-java" />
-	<property name="version.number" value="2.2.2" />
-	<property name="version.filename" value="2_2_2" />
+	<property name="version.number" value="2.2.3" />
+	<property name="version.filename" value="2_2_3" />
 	<property name="archive" value="cti-java-${version.filename}" />
 	<property name="encoding" value="UTF-8" />
 

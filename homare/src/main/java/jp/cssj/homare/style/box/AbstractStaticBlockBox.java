@@ -53,6 +53,9 @@ public abstract class AbstractStaticBlockBox extends AbstractBlockBox {
 		} else {
 			containerBox = layoutStack.getFlowBox();
 		}
+		if (!table && containerBox.getType() == IBox.TYPE_TABLE_CELL) {
+			table = true;
+		}
 		final BlockParams cParams = containerBox.getBlockParams();
 		final double lineSize = containerBox.getLineSize();
 		if (StyleUtils.isVertical(this.params.flow)) {
