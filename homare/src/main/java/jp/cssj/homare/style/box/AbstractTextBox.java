@@ -458,6 +458,15 @@ public abstract class AbstractTextBox extends AbstractBox {
 			this.descent = descent;
 		}
 
+		private void missingFont(Text text) {
+			final String c = new String(text.getChars(), 0, text.getCLen());
+			final StringBuffer codes = new StringBuffer();
+			for (int j = 0; j < c.length(); ++j) {
+				codes.append("[").append(Integer.toHexString(c.charAt(j))).append("]");
+			}
+			this.pageBox.getUserAgent().message(MessageCodes.WARN_MISSING_FONT, c + codes.toString());
+		}
+
 		public void innerDraw(GC gc, double x, double y) throws GraphicsException {
 			// 影
 			if (this.params.textShadows != null) {
@@ -493,8 +502,7 @@ public abstract class AbstractTextBox extends AbstractBox {
 				for (int i = 0; i < this.len; ++i) {
 					final Text text = (Text) this.contents.get(i + this.off);
 					if (text.getFontMetrics().getFontSource() == MissingCIDFontSource.INSTANCES_TB) {
-						this.pageBox.getUserAgent().message(MessageCodes.WARN_MISSING_FONT,
-								new String(text.getChars(), 0, text.getCLen()));
+						this.missingFont(text);
 					}
 					gc.drawText(text, x + this.descent, y);
 					y += text.getAdvance();
@@ -510,8 +518,7 @@ public abstract class AbstractTextBox extends AbstractBox {
 				for (int i = 0; i < this.len; ++i) {
 					final Text text = (Text) this.contents.get(i + this.off);
 					if (text.getFontMetrics().getFontSource() == MissingCIDFontSource.INSTANCES_LTR) {
-						this.pageBox.getUserAgent().message(MessageCodes.WARN_MISSING_FONT,
-								new String(text.getChars(), 0, text.getCLen()));
+						this.missingFont(text);
 					}
 					gc.drawText(text, x, y + this.ascent);
 					x += text.getAdvance();
@@ -864,6 +871,15 @@ public abstract class AbstractTextBox extends AbstractBox {
 		}
 	}
 
+	private void missingFontOutline(final PageBox pageBox, final Text text) {
+		final String c = new String(text.getChars(), 0, text.getCLen());
+		final StringBuffer codes = new StringBuffer();
+		for (int j = 0; j < c.length(); ++j) {
+			codes.append("[").append(Integer.toHexString(c.charAt(j))).append("]");
+		}
+		pageBox.getUserAgent().message(MessageCodes.WARN_MISSING_FONT_OUTLINE, c + codes);
+	}
+
 	public void textShape(PageBox pageBox, GeneralPath path, AffineTransform transform, double x, double y) {
 		if (this.types == null || this.types.isEmpty()) {
 			return;
@@ -887,8 +903,7 @@ public abstract class AbstractTextBox extends AbstractBox {
 						FontUtils.addTextPath(path, (ShapedFont)font, text, at);
 					}
 					else {
-						pageBox.getUserAgent().message(MessageCodes.WARN_MISSING_FONT_OUTLINE,
-								new String(text.getChars(), 0, text.getCLen()));
+						this.missingFontOutline(pageBox, text);
 					}
 					yy += text.getAdvance();
 				} else {
@@ -899,8 +914,7 @@ public abstract class AbstractTextBox extends AbstractBox {
 						FontUtils.addTextPath(path, (ShapedFont)font, text, at);
 					}
 					else {
-						pageBox.getUserAgent().message(MessageCodes.WARN_MISSING_FONT_OUTLINE,
-								new String(text.getChars(), 0, text.getCLen()));
+						this.missingFontOutline(pageBox, text);
 					}
 					xx += text.getAdvance();
 				}
