@@ -75,6 +75,9 @@ public final class URIHelper {
 
 	private static String filter(String encoding, String uri) {
 		uri = uri.trim();
+		if (uri.equals("file:")) {
+			uri = "file:.";
+		}
 
 		Charset cs = Charset.forName(encoding);
 		if (cs.name().startsWith("UTF-")) {

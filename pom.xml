@@ -6,7 +6,7 @@
 	<groupId>net.zamasoft</groupId>
 	<artifactId>copper</artifactId>
 	<packaging>pom</packaging>
-	<version>3.2.23</version>
+	<version>3.2.32</version>
 	<name>Copper PDF</name>
 	<description>
 HTML/CSSをPDFや画像などに変換するプログラムです。

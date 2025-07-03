@@ -19,6 +19,7 @@ import jp.cssj.sakae.font.Font;
 import jp.cssj.sakae.font.FontMetricsImpl;
 import jp.cssj.sakae.font.FontSource;
 import jp.cssj.sakae.font.ImageFont;
+import jp.cssj.sakae.font.ShapedFont;
 import jp.cssj.sakae.gc.GC;
 import jp.cssj.sakae.gc.GraphicsException;
 import jp.cssj.sakae.gc.font.FontManager;
@@ -840,6 +841,23 @@ public class PdfGC implements GC {
 		}
 		if (outline || font instanceof ImageFont) {
 			if (font instanceof DrawableFont) {
+				if (font instanceof ShapedFont) {
+					int glen = text.getGLen();
+					int[] gids = text.getGIDs();
+					boolean hasShape = false;
+					for (int i = 0; i < glen; ++i) {
+						int gid = gids[i];
+						Shape shape = ((ShapedFont) font).getShapeByGID(gid);
+						if (shape != null && !shape.getPathIterator(null).isDone()) {
+							hasShape = true;
+							break;
+						}
+					}
+					if (!hasShape) {
+						// 描画する文字がない
+						return;
+					}
+				}
 				this.begin();
 				this.transform(AffineTransform.getTranslateInstance(x, y));
 				FontUtils.drawText(this, (DrawableFont) font, text);

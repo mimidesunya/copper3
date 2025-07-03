@@ -486,7 +486,7 @@ public class PNGImage extends SimpleRenderedImage {
 			for (len = distream.read(this.buff, 0, Math.min(remainder, this.buff.length)); len != -1
 					&& remainder > 0; len = distream.read(this.buff, 0, Math.min(remainder, this.buff.length))) {
 				out.write(this.buff, 0, len);
-				remainder -= length;
+				remainder -= len;
 			}
 		} else {
 			len = 0;

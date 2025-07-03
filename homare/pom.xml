@@ -9,7 +9,7 @@
   <groupId>net.zamasoft</groupId>
  	<artifactId>homare</artifactId>
   <packaging>jar</packaging>
-  <version>3.2.31</version>
+  <version>3.2.32</version>
   <name>Homare</name>
 	<description>印刷向けのHTML/CSSレンダリングエンジンです。</description>
 	<url>https://copper.osdn.jp/homare/</url>
